@@ -1,0 +1,169 @@
+tables:
+links - movieid int, imdbid int, tmdbid int
+movies- movieId string,title string,genres string
+ratings-userId int,movieId int,rating double,timestamp string
+tags-userId int,movieId int,tag string,timestamp string
+
+
+
+
+
+first:  git clone "https://github.com/AjaySingala/P1-MovieLens" onto the local vm machine
+
+Upload the data into HDFS
+second: hdfs dfs -put P1-MovieLens
+
+Create tables in HIVE from the uploaded data
+third: hive view upload the tables with source location "/user/maria_dev/P2-MovieLens/movielens/ratings.csv"
+
+or 
+
+create database project1;
+
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+CREATE TABLE movies (movieid string, title string,genres string)
+row format delimited
+fields terminated by ',';
+
+--delete the first row from csv files
+
+LOAD DATA INPATH '/P2-MovieLens/movies.csv'
+INTO TABLE movies;
+
+
+
+Write HIVE queries to get the following results:
+
+01. first 5 entries from movies table  --DONE
+>>> SELECT * FROM movies LIMIT 5;
+
+02. number of unique movies  --DONE
+>>> SELECT COUNT(DISTINCT title) FROM movies; 27278-27262
+
+03. summary of ratings data : top few records. count of records, avg ratings --DONE
+>>>select min(rating) as min_rating, max(rating) as max_rating, avg(rating) as avg_ratings, count(*) as totat_count from ratings;
+ 
+select * from ratings; select count(*) from ratings;- 1048575 select avg(rating) from ratings; 
+
+04. minimum rating given to a movie --DONE
+>>> SELECT MAX(rating) FROM ratings;  -5.0
+
+select title, from movies 
+
+05. maximum rating given to a movie --DONE
+>>> SELECT MIN(rating) FROM ratings;  -0.5
+
+06. is any row null in tags --DONE
+>>> select * from tags where movieid=NULL and userid=NULL and tag=NULL and timestamps=NULL;
+
+07. number of unique tags --DONE 
+>>> select count(distinct(tag)) from tags; 38643- 465564
+
+08. drop null rows from tags and create another table of the resulting rows
+>>> create table tmp as select * from tags where movieid IS NOT NULL;
+
+09. filtering to get the list of drama movies --DONE
+>>> select * from movies where genres like "%Drama%";
+
+10. total number of drama movies --DONE
+>>> select count(*) from movies where genres like "%Drama%";
+
+
+11. filtering to get the list of comedy movies --DONE
+>>>select * from movies where genres like "%Comedy%";
+
+select title,regexp_extract(genres,'Drama.*',0) from movies;
+
+12. total no. of comedy movies --DONE
+>>> select count(*) from movies where genres like "%Comedy%"; 
+
+13. search movie id by tag search --
+>>> select movieid,tag from tags where tag=''
+
+14. displays first 5 data from ratings table --DONE
+>>> select * from ratings limit 5;
+
+15. merging two tables movies and ratings into a new table without the "timestamp" column from the ratings table.
+>>>create table temp as select m.movieid,m.title,m.genres,r.userid,r.rating from movies as m left join ratings as r on m.movieid=r.movieid;
+
+16. display high rated movies (rating > 4) --DONE
+>>> select m.title,r.rating from movies as m join ratings as r where r.rating<4 limit 10;
+ 
+select * from ratings where rating>4;
+
+17. display low rated movies (rating < 4) --DONE
+>>> select m.title,r.rating from movies as m join ratings as r where r.rating<4 limit 10;
+
+18. total number of unique movie genres --
+>>>select count(distinct(genre)) from (select explode(split(genres,'\\|')) as genre from movies) as e; 
+
+select distinct(split(genres,'\\|')) from movies;
+
+19. top 25 most rated movies --DONE
+>>>select movies.movieid,title, avg(rating) as avg from movies inner join ratings where movies.movieid=ratings.movieid group by movies.movieid,title order by avg desc,movieid limit 25;
+
+select movies.movieid,title, count(rating) as avg from movies right join ratings on movies.movieid=ratings.movieid group by movies.movieid,title order by avg desc,title limit 25;
+
+select m.movieid,m.title,r.rating from movies as m join ratings as r where m.movieid=r.movieid and r.rating in (select avg(rating) from ratings group by movieid) order by r.rating desc limit 25;
+
+20. slicing out columns to display only title and genres columns from movies table
+>>> select title,genres from movies limit 20;
+
+21. extract year from title of the movie --DONE
+>>>select regexp_extract(title,"\\([0-9](.*)",0) as year from movies;
+select regexp_extract(title,"\\((.*)",0) as year from movies limit 10;
+
+22. count how many times each of genres occur
+>>> select genre, count(genre) from (select explode(split(genres,'\\|')) as genre from movies) as e group by genre;
+
+23. Which movie received the highest number of ratings? --DO
+>>>select movies.movieid,title, count(rating) as avg from movies right join ratings on movies.movieid=ratings.movieid group by movies.movieid,title order by avg desc,title limit 1;
+
+
+
+
+
+
+
+
+
+
+
+ sqoop export\
+    > --connect jdbc:mysql://localhost/project1 \
+    > --username root \
+    > --password hortonworks1 \
+    > --table movies \
+    > --export-dir /P2-MovieLens/movies.csv \
+    > --m 1
+
+sqoop export\
+    > --connect jdbc:mysql://localhost/project1 \
+    > --username root \
+    > --password hortonworks1 \
+    > --table links \
+    > --export-dir /P2-MovieLens/links.csv \
+    > --m 1
+
+
+from mysql to hive
+
+sqoop import \
+--connect jdbc:mysql://localhost/userdb  \
+--username root \
+--password hortonworks1 \
+--columns id,name \
+--split-by id \
+--table customer  \
+--target-dir raw/customers  \
+--fields-terminated-by "," \
+--hive-import \
+--create-hive-table  \
+--hive-table default.customers
+
+sqoop import --connect jdbc:mysql://localhost/project1 --username root --password hortonworks1 --columns userid,movieid,tag,timestamps --split-by tag --table tags --fields-terminated-by "," --hive-import --hive-database project01 --m 1
+
+
+sqoop import --connect jdbc:mysql://localhost/project1 --username root --password hortonworks1 --split-by tag --table tags --hive-import --hive-database project01 --m 1

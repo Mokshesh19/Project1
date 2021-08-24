@@ -150,19 +150,6 @@ sqoop export\
 
 from mysql to hive
 
-sqoop import \
---connect jdbc:mysql://localhost/userdb  \
---username root \
---password hortonworks1 \
---columns id,name \
---split-by id \
---table customer  \
---target-dir raw/customers  \
---fields-terminated-by "," \
---hive-import \
---create-hive-table  \
---hive-table default.customers
-
 sqoop import --connect jdbc:mysql://localhost/project1 --username root --password hortonworks1 --columns userid,movieid,tag,timestamps --split-by tag --table tags --fields-terminated-by "," --hive-import --hive-database project01 --m 1
 
 

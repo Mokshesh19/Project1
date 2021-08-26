@@ -24,10 +24,8 @@ To-do list:
 * Importing data from MySql creates some descripencies in data, which requires a fix
 
 ## Getting Started
-   
-Clone the repositry that contains the data
-
-# Prerequisites
+  
+## Prerequisites
 A hadoop ecosytem with its components 
 - HDFS
 - YARN

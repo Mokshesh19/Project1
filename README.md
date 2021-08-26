@@ -33,14 +33,14 @@ A hadoop ecosytem with its components
 - Sqoop
 - Hive
 - MySql
-# Hardware requirements:
+### Hardware requirements:
 - Cpu with 4 or more logical cores
 - Atleast 12gb of ram
 - Storage like Hard disk or SSD with atleast 50-60GB of space
 
 ## Usage
 
-#Steps to be followed:
+##Steps to be followed:
 -Login onto the VM using ssh command give your domain name and password
 ```
 ssh username@sandbox-hdp.hortonworks.com -p 2222

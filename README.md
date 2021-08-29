@@ -20,8 +20,8 @@ List of features ready and TODOs for future development
 * Queries are written in a common SELECT,FROM,WHERE format similar to many database management systems which make them easier to read understand
 
 To-do list:
-* To include Bucketing
-* Importing data from MySql creates some descripencies in data, which requires a fix
+* To include Bucketing for further optimizations
+* Importing data from MySql creates some descripencies in data, which requires a fix.
 
 ## Getting Started
   
